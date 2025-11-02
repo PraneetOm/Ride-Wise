@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* FORCE full-screen fixed layout and remove default body margin/scroll */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* <- disables page scrolling */
+}
+
+/* utility: center a fixed container */
+.auth-root {
+  position: fixed; /* fixed to viewport */
+  inset: 0;        /* top:0; right:0; bottom:0; left:0 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #5b21b6 60%, #7c3aed 100%);
+}
+
+/* the card */
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* inputs inside the card */
+.auth-card .field {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+  outline: none;
+}
+
+/* button */
+.auth-card .btn {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 16px;
+  border-radius: 12px;
+  background: linear-gradient(90deg,#2563eb,#7c3aed);
+  border: none;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* small screens: keep card smaller but still no page scroll */
+@media (max-height: 640px) {
+  .auth-card { max-height: 92vh; overflow: auto; padding: 18px; }
+}
