@@ -37,9 +37,30 @@ io.on("connection", (socket) => {
     socket.to(room).emit("user-joined", { userName });
   });
 
+  // Allow client to leave a group room
+  // socket.on("leave-group", ({ groupId, userName }) => {
+  //   socket.leave(groupId);
+  //   socket.to(groupId).emit("user-left", { userName });
+  // });
+  socket.on("leave-group", ({ groupId, userName }) => {
+    const room = `group_${groupId}`;
+    socket.leave(room);
+    console.log(`👤 ${userName} left ${room}`);
+
+    // Notify others in the same room
+    socket.to(room).emit("user-left", { userName });
+  });
+
   // When a chat message is sent
-  socket.on("chat-message", ({ groupId, message, userName }) => {
-    const payload = { message, userName, timestamp: new Date() };
+  socket.on("chat-message", ({ groupId, message, userName, senderId, clientId, timestamp }) => {
+    const payload = {
+      message,
+      userName,
+      senderId: senderId ?? null,
+      clientId: clientId ?? null,
+      // normalize timestamp to number ms
+      timestamp: typeof timestamp === "number" ? timestamp : Date.now(),
+    };
     io.to(`group_${groupId}`).emit("chat-message", payload);
   });
 
