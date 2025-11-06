@@ -6,10 +6,10 @@ const router = express.Router();
 // ➕ Create a new ride group
 router.post("/", async (req, res) => {
   try {
-    const { group_name, start_location, end_location } = req.body;
+    const { group_name, start_location, end_location, time_range_start, time_range_end, total_cost } = req.body;
     const [result] = await db.query(
-      "INSERT INTO ride_groups (group_name, start_location, end_location) VALUES (?, ?, ?)",
-      [group_name, start_location, end_location]
+      "INSERT INTO ride_groups (group_name, start_location, end_location, time_range_start, time_range_end, total_cost) VALUES (?, ?, ?, ?, ?, ?)",
+      [group_name, start_location, end_location, time_range_start || null, time_range_end || null, total_cost || null]
     );
 
     res.status(201).json({ message: "Group created!", id: result.insertId });
@@ -30,15 +30,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 📋 Get all ride groups
-router.get("/get_curr_crowd", async (req, res) => {
+// 📋 Get group
+router.get("/:group_id", async (req, res) => {
   try {
-    const { id } = req.body;
-    const [ members ] = await db.query("SELECT number_of_members FROM ride_groups where id = ?", [id]);
-    
-    res.json(members);
+    const { group_id } = req.params;
+    const [rows] = await db.query("SELECT * FROM ride_groups WHERE id = ?", [group_id]);
+    console.log("groupdata:", { group_id, rows });
+    res.json(rows[0] || {});
   } catch (err) {
-    console.error("Error fetching members:", err);
+    console.error("Error fetching group:", err);
     res.status(500).json({ error: "Database error" });
   }
 });
