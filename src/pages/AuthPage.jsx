@@ -13,7 +13,7 @@ export default function AuthPage() {
     e.preventDefault();
     try {
       if (isLogin) {
-        const res = await axios.post("http://localhost:5000/api/auth/login", {
+        const res = await axios.post("https://ride-wise.onrender.com/api/auth/login", {
           email: form.email,
           password: form.password,
         });
@@ -95,4 +95,5 @@ export default function AuthPage() {
       </div>
     </div>
   );
+
 }
