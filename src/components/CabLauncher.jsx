@@ -35,21 +35,21 @@ const CabLauncher = ({ drop }) => {
   const cabApps = [
     {
       name: "Uber",
-      logo: "/assets/uber.png",
+      logo: "../public/uber.png",
       deeplink:
         "uber://?action=setPickup&pickup[latitude]={pickup_lat}&pickup[longitude]={pickup_lng}&dropoff[latitude]={drop_lat}&dropoff[longitude]={drop_lng}",
       fallback: "https://play.google.com/store/apps/details?id=com.ubercab",
     },
     {
       name: "Ola",
-      logo: "/assets/ola.png",
+      logo: "../public/ola-cabs-logo.png",
       deeplink:
         "olacabs://app/launch?lat={pickup_lat}&lng={pickup_lng}&drop_lat={drop_lat}&drop_lng={drop_lng}",
       fallback: "https://play.google.com/store/apps/details?id=com.olacabs.customer",
     },
     {
       name: "Rapido",
-      logo: "/assets/rapido.png",
+      logo: "../public/Rapido-logo.png",
       deeplink:
         "rapido://ride?pickup_lat={pickup_lat}&pickup_lng={pickup_lng}&drop_lat={drop_lat}&drop_lng={drop_lng}",
       fallback: "https://play.google.com/store/apps/details?id=com.rapido.passenger",
