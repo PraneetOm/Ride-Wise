@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import CabLauncher from "../components/CabLauncher";
 
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE?.replace("/api", "") || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_API_BASE?.replace("/api", "") || "https://ride-wise.onrender.com";
 
 export default function GroupPage() {
   const { id } = useParams();
