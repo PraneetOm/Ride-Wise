@@ -22,7 +22,7 @@ export default function AuthPage() {
         alert("Login successful!");
         navigate("/groups");
       } else {
-        await axios.post("http://localhost:5000/api/auth/register", {
+        await axios.post("https://ride-wise.onrender.com/api/auth/register", {
           name: form.name,
           email: form.email,
           phone: form.phone,
@@ -97,3 +97,4 @@ export default function AuthPage() {
   );
 
 }
+
