@@ -80,10 +80,12 @@ function NavBar(){
 }
 
 export default function App(){
+  const hideNav = location.pathname === "/";
+  
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-100">
-        <NavBar />
+        {!hideNav && <NavBar />}
 
         <main className="p-6">
           <Routes>                
