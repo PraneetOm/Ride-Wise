@@ -3,7 +3,7 @@ import api from "../api";
 import { Link, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE?.replace("/api", "") || "https://ride-wise.onrender.com/api/auth";
+const SOCKET_URL = import.meta.env.VITE_API_BASE?.replace("/api", "") || "https://ride-wise.onrender.com";
 
 export default function GroupList(){
   const [groups, setGroups] = useState([]);
