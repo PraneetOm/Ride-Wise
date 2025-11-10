@@ -30,7 +30,7 @@ export default function GroupPage() {
       const nextMembers = membersRes.data || [];
       async function load() {
         try {
-          const res = await api.get("/groups/id", { params: { group_id: id } });
+          const res = await api.get(`/groups/${id}`);
           console.log(res.data);
           setGroup(res.data);
         } catch (err) { console.error(err); }
