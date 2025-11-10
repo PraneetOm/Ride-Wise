@@ -61,3 +61,18 @@ html, body, #root {
 @media (max-height: 640px) {
   .auth-card { max-height: 92vh; overflow: auto; padding: 18px; }
 }
+
+html, body {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
