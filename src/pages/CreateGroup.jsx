@@ -14,6 +14,8 @@ export default function CreateGroup() {
   const [endSuggestions, setEndSuggestions] = useState([]);
   const navigate = useNavigate();
 
+  const startBoxRef = useRef(null);
+  const endBoxRef = useRef(null);
   const startInputRef = useRef(null);
   const endInputRef = useRef(null);
   const GEOAPIFY_KEY = "110deec76066472b8c8d376e57074323";
@@ -79,6 +81,26 @@ export default function CreateGroup() {
       setEndLoc(place.formatted_address || place.name);
     });
   }, []);
+  // ✅ Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        startBoxRef.current &&
+        !startBoxRef.current.contains(event.target)
+      ) {
+        setStartSuggestions([]);
+      }
+      if (
+        endBoxRef.current &&
+        !endBoxRef.current.contains(event.target)
+      ) {
+        setEndSuggestions([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,10 +145,11 @@ export default function CreateGroup() {
         {/* Locations */}
         <div className="grid grid-cols-2 gap-6">
           {/* Start Location */}
-          <div className="relative">
+          <div className="relative" ref={startBoxRef}>
             <label className="block text-base">Start Location</label>
             <input
               value={startLoc}
+              ref={startInputRef}
               onChange={(e) => {
                 setStartLoc(e.target.value);
                 handleSearch(e.target.value, "start");
@@ -150,10 +173,11 @@ export default function CreateGroup() {
           </div>
 
           {/* End Location */}
-          <div className="relative">
+          <div className="relative" ref={endBoxRef}>
             <label className="block text-base">End Location</label>
             <input
               value={endLoc}
+              ref={endInputRef}
               onChange={(e) => {
                 setEndLoc(e.target.value);
                 handleSearch(e.target.value, "end");
@@ -175,6 +199,7 @@ export default function CreateGroup() {
               </ul>
             )}
           </div>
+
         </div>
 
         <div className="grid grid-cols-2 gap-6">
