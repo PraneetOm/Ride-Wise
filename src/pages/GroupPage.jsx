@@ -60,7 +60,7 @@ export default function GroupPage() {
     async function loadData() {
       try {
         const [groupsRes, membersRes] = await Promise.all([
-          api.get(`/groups/${id}`),
+          api.get(`/groups`),
           api.get(`/members/group/${id}`)
         ]);
         const found = groupsRes.data.find((x) => String(x.id) === String(id));
@@ -358,7 +358,7 @@ export default function GroupPage() {
         </div>
 
         {/* RIGHT PANEL — CHAT SECTION */}
-        <div className="col-span-2 sm:col-span-1 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border flex flex-col">
+        <div className="col-span-2 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 flex items-center gap-2">
               💬 Live Chat
