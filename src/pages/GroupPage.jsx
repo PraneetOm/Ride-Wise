@@ -3,38 +3,87 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../api";
 import { io } from "socket.io-client";
 import CabLauncher from "../components/CabLauncher";
-
+import axios from "axios";
+import { RefreshCcw } from "lucide-react";
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE?.replace("/api", "") || "https://ride-wise.onrender.com";
 
 export default function GroupPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState([]);
   const [msgText, setMsgText] = useState("");
   const [joined, setJoined] = useState(true);
-
+  const [liveMemberCount, setLiveMemberCount] = useState(0);
   const socketRef = useRef(null);
   const messagesEnd = useRef(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const isGuest = !user;
 
+  //price updation starts
+  const [updatingPrice, setUpdatingPrice] = useState(false);
+  const [price, setPrice] = useState(group?.data?.total_cost);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handlePriceUpdate = async () => {
+    const newPrice = prompt("Enter your ride price (₹):");
+    if (!newPrice || isNaN(newPrice)) return alert("Please enter a valid number!");
+
+    const num = parseFloat(newPrice);
+    if (price !== null && num >= price) {
+      return alert(`The current lowest price is ₹${price}. You must offer lower.`);
+    }
+
+    try {
+      setUpdatingPrice(true);
+      const res = await api.put(`/groups/price/${id}`, { newPrice: num });
+      console.log("Price update response:", res.data);
+      setPrice(num);
+
+      // emit socket event to notify chat
+      socketRef.current.emit("priceChanged", {
+        groupId: group.data.id,
+        message: `💸 The ride price has been updated to ₹${num}`,
+      });
+
+      alert("Price updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update price.");
+    } finally {
+      setUpdatingPrice(false);
+    }
+  };
+
+  const refreshPrice = async () => {
+    try {
+      setRefreshing(true);
+      const res = await api.get(`/groups/${id}`);
+        console.log(res);
+        setGroup(res);
+        setPrice(res.data.total_cost);
+        setLiveMemberCount(res.data.number_of_members || 0);
+    } catch (err) {
+      console.error("Failed to refresh price:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // end price update
   async function refreshMembersAndCount() {
     try {
       const membersRes = await api.get(`/members/group/${id}`);
       const nextMembers = membersRes.data || [];
       async function load() {
         try {
-          const res = await api.get("/groups/id", { params: { group_id: id } });
-          console.log(res.data);
-          setGroup(res.data);
+          const res = await api.get(`/groups/${id}`);
+          setGroup(res);
+          setLiveMemberCount(res.data.number_of_members || 0);
         } catch (err) { console.error(err); }
-        setLoading(false);
       }
       load();
       setMembers(nextMembers);
@@ -43,45 +92,51 @@ export default function GroupPage() {
     }
   }
 
+  // 🔹 Load group current detail initially
   useEffect(() => {
     async function load() {
       try {
         const res = await api.get(`/groups/${id}`);
         console.log(res);
         setGroup(res);
+        setPrice(res.data.total_cost);
+        setLiveMemberCount(res.data.number_of_members || 0);
+
+        const membersRes = await api.get(`/members/group/${id}`);
+        setMembers(membersRes.data || []);
       } catch (err) { console.error(err); }
-      setLoading(false);
     }
     load();
   }, []);
 
   // 🔹 Load group + members initially
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [groupsRes, membersRes] = await Promise.all([
-          api.get(`/groups`),
-          api.get(`/members/group/${id}`)
-        ]);
-        const found = groupsRes.data.find((x) => String(x.id) === String(id));
-        const memberList = membersRes.data || [];
-        setMembers(memberList);
-        async function load() {
-          try {
-            const res = await api.get(`/groups/${id}`);
-            console.log(found);
-            setGroup(res.data);
-          } catch (err) { console.error(err); }
-          setLoading(false);
-        }
-        load();
-      } catch (err) {
-        console.error("Error loading data:", err);
-      }
-    }
+  // useEffect(() => {
+  //   async function loadData() {
+  //     try {
+  //       const [groupsRes, membersRes] = await Promise.all([
+  //         api.get(`/groups`),
+  //         api.get(`/members/group/${id}`)
+  //       ]);
+  //       const found = groupsRes.data.find((x) => String(x.id) === String(id));
+  //       const memberList = membersRes.data || [];
+  //       setMembers(memberList);
+  //       async function load() {
+  //         try {
+  //           const res = await api.get(`/groups/${id}`);
+  //           console.log(found);
+  //           setGroup(res.data);
+  //           // setPrice(res.data.total_cost);
+  //         } catch (err) { console.error(err); }
+  //         setLoading(false);
+  //       }
+  //       load();
+  //     } catch (err) {
+  //       console.error("Error loading data:", err);
+  //     }
+  //   }
 
-    loadData();
-  }, [id]);
+  //   loadData();
+  // }, [id]);
 
   // 🔹 Setup socket connection
   useEffect(() => {
@@ -109,7 +164,6 @@ export default function GroupPage() {
       refreshMembersAndCount();
     });
 
-    // ✅ Listen for chat messages (dedupe incoming to avoid duplicating optimistic messages)
     sock.on("chat-message", (payload) => {
       setMessages((prev) => {
         // If payload contains clientId (added by sender) and we've already got it, ignore
@@ -141,6 +195,14 @@ export default function GroupPage() {
       setMessages((prev) => [...prev, { system: true, message: `${userName} left the group` }]);
       refreshMembersAndCount();
     });
+    sock.on("priceChanged", ({ groupId, message }) => {
+      setMessages((prev) => [...prev, { system: true, message: `${message} aa` }]);
+      refreshMembersAndCount();
+    });
+    sock.on("systemMessage", (msg) => {
+      setMessages((prev) => [...prev, { system: true, text: msg }]);
+    });
+
 
     return () => {
       // ✅ proper cleanup on page close/unmount
@@ -186,7 +248,7 @@ export default function GroupPage() {
       // leave room; server will broadcast
       socketRef.current?.emit("leave-group", { groupId: id, userName: user.name });
 
-      alert(res.data.message || "Left group");
+      alert("Left group");
     } catch (err) {
       console.error("Leave error:", err);
       alert(err.response?.data?.error || err.response?.data?.message || "Could not leave group");
@@ -255,25 +317,19 @@ export default function GroupPage() {
     ? new Date(group.data.time_range_end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     : "Not specified";
 
-  const liveMemberCount = (group && typeof group.data.number_of_members !== "undefined")
-    ? Number(group.data.number_of_members || 0)
-    : Number(members.length || 0);
-
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-gray-100 min-h-screen">
+    <div className="w-full min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-10">
       {/* GRID CONTAINER */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mx-auto max-w-[1400px] items-start">
         {/* LEFT PANEL */}
-        <div className="col-span-1 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border relative">
-          {/* Decorative Background */}
+        <div className="col-span-1 bg-white p-6 rounded-2xl shadow-lg border relative">
           <img
             src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png"
             alt="Group Icon"
             className="absolute opacity-10 right-4 top-4 w-16 sm:w-20"
           />
 
-          <h2 className="font-bold text-xl sm:text-2xl mb-1 text-blue-700">
+          <h2 className="font-bold text-2xl mb-1 text-blue-700">
             {group?.data.group_name || "Unnamed Group"}
           </h2>
           <p className="text-gray-600 text-sm mb-3">
@@ -294,28 +350,27 @@ export default function GroupPage() {
 
           {/* Members Section */}
           <h3 className="font-semibold text-lg mb-2 text-gray-800">Members</h3>
-          <ul className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 pr-1">
-            {members.map((m) => (
-              <li
-                key={m.id || m.member_id}
-                className="flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100 border rounded-lg transition"
-              >
-                <div>
-                  <div className="font-medium text-gray-800 text-sm sm:text-base">
-                    {m.member_name || m.name}
+          <div className="lg:max-h-30 overflow-y-auto rounded-lg border border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <ul className="space-y-2 p-1">
+              {members.map((m) => (
+                <li
+                  key={m.id || m.member_id}
+                  className="flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100 border rounded-lg transition"
+                >
+                  <div>
+                    <div className="font-medium text-gray-800 text-sm sm:text-base">
+                      {m.member_name || m.name}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {m.member_email || m.email}
+                  <div className="text-sm text-green-600 font-semibold">
+                    ₹{Number(m.contribution || 0).toFixed(2)}
                   </div>
-                </div>
-                <div className="text-sm text-green-600 font-semibold">
-                  ₹{Number(m.contribution || 0).toFixed(2)}
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          {/* Add/Leave Section */}
+          {/* Leave/Join */}
           <div className="mt-5">
             {isGuest ? (
               <form
@@ -352,50 +407,76 @@ export default function GroupPage() {
             )}
           </div>
 
+          {/* Price Section */}
+          <div className="mt-4 p-4 bg-gray-100 rounded-xl shadow-sm flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                💰 Current Ride Price
+              </h3>
+              <p className="text-2xl font-bold text-green-600">
+                ₹{price ? price : "Not set yet"}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePriceUpdate}
+                disabled={updatingPrice}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                {updatingPrice ? "Updating..." : "Set My Price"}
+              </button>
+              <button
+                onClick={refreshPrice}
+                disabled={refreshing}
+                className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
+                title="Refresh price"
+              >
+                <RefreshCcw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+              </button>
+            </div>
+          </div>
+
           <div className="mt-5">
             <CabLauncher />
           </div>
         </div>
 
-        {/* RIGHT PANEL — CHAT SECTION */}
-        <div className="col-span-2 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border flex flex-col">
+        {/* RIGHT PANEL */}
+        <div className="col-span-2 lg:min-h-[600px] bg-white p-6 rounded-2xl shadow-lg border flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 flex items-center gap-2">
+            <h3 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
               💬 Live Chat
             </h3>
             <img
               src="https://cdn-icons-png.flaticon.com/512/1769/1769041.png"
               alt="Chat Icon"
-              className="w-6 h-6 sm:w-8 sm:h-8"
+              className="w-8 h-8"
             />
           </div>
 
           <div
-            className="flex-1 overflow-y-auto p-3 sm:p-4 border rounded-xl bg-gray-50 space-y-3 shadow-inner"
-            style={{
-              maxHeight: "450px",
-              minHeight: "300px",
-            }}
+            className="flex-1 overflow-y-auto p-4 border rounded-xl bg-gray-50 space-y-3 shadow-inner"
+            style={{ maxHeight: "500px", minHeight: "320px" }}
           >
             {messages.map((m, idx) =>
               m.system ? (
-                <div
-                  key={idx}
-                  className="text-center text-xs text-gray-400 my-2"
-                >
+                <div key={idx} className="text-center text-xs text-gray-400 my-2">
                   {m.message}
                 </div>
               ) : (
                 <div
                   key={idx}
-                  className={`flex ${m.senderId === user?.id ? "justify-end" : "justify-start"
-                    }`}
+                  className={`flex ${
+                    m.senderId === user?.id ? "justify-end" : "justify-start"
+                  }`}
                 >
                   <div
-                    className={`max-w-[75%] sm:max-w-xs px-3 py-2 rounded-2xl shadow-sm ${m.senderId === user?.id
+                    className={`max-w-[75%] sm:max-w-xs px-3 py-2 rounded-2xl shadow-sm ${
+                      m.senderId === user?.id
                         ? "bg-blue-600 text-white rounded-br-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
-                      }`}
+                    }`}
                   >
                     <div className="text-xs font-semibold mb-1">
                       {m.userName || "User"}
@@ -411,7 +492,6 @@ export default function GroupPage() {
             <div ref={messagesEnd} />
           </div>
 
-          {/* Chat Input */}
           <form
             onSubmit={sendMessage}
             className="flex flex-col sm:flex-row gap-3 mt-4 items-stretch sm:items-center border-t pt-4"
@@ -430,4 +510,4 @@ export default function GroupPage() {
       </div>
     </div>
   );
-}    
+}
