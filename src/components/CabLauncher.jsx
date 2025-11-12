@@ -67,7 +67,7 @@ const CabLauncher = ({ drop }) => {
       return;
     }
 
-    //const deeplink = app.deeplink
+    const deeplink = app.deeplink;
       //.replace("{pickup_lat}", pickup.lat)
       //.replace("{pickup_lng}", pickup.lng)
       //.replace("{drop_lat}", drop.lat)
@@ -115,4 +115,5 @@ const CabLauncher = ({ drop }) => {
 
 
 export default CabLauncher;
+
 
