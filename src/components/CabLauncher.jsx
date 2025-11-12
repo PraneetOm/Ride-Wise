@@ -40,21 +40,29 @@ const CabLauncher = ({ drop }) => {
     },
   ];
 
-  const openApp = (app) => {
-
+    const openApp = (app) => {
     if (!isMobile) {
       window.open(app.fallback_pc, "_blank");
       return;
     }
 
-    const deeplink = app.deeplink;
+    let hidden = false;
 
-    // Try opening the deep link
-    window.location.href = deeplink;
+    // Detect if user switched away (app opened)
+    const handleVisibilityChange = () => {
+      if (document.hidden) hidden = true;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Fallback to Play Store after short delay
+    // Try to open the app
+    window.location.href = app.deeplink;
+
+    // Fallback only if the app didn’t open (page still visible)
     setTimeout(() => {
-      window.location.href = app.fallback;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (!hidden) {
+        window.location.href = app.fallback;
+      }
     }, 1500);
   };
 
@@ -83,5 +91,6 @@ const CabLauncher = ({ drop }) => {
 };
 
 export default CabLauncher;
+
 
 
