@@ -108,36 +108,6 @@ export default function GroupPage() {
     }
     load();
   }, []);
-
-  // 🔹 Load group + members initially
-  // useEffect(() => {
-  //   async function loadData() {
-  //     try {
-  //       const [groupsRes, membersRes] = await Promise.all([
-  //         api.get(`/groups`),
-  //         api.get(`/members/group/${id}`)
-  //       ]);
-  //       const found = groupsRes.data.find((x) => String(x.id) === String(id));
-  //       const memberList = membersRes.data || [];
-  //       setMembers(memberList);
-  //       async function load() {
-  //         try {
-  //           const res = await api.get(`/groups/${id}`);
-  //           console.log(found);
-  //           setGroup(res.data);
-  //           // setPrice(res.data.total_cost);
-  //         } catch (err) { console.error(err); }
-  //         setLoading(false);
-  //       }
-  //       load();
-  //     } catch (err) {
-  //       console.error("Error loading data:", err);
-  //     }
-  //   }
-
-  //   loadData();
-  // }, [id]);
-
   // 🔹 Setup socket connection
   useEffect(() => {
     const sock = io(SOCKET_URL, { transports: ["websocket", "polling"] });
@@ -318,39 +288,40 @@ export default function GroupPage() {
     : "Not specified";
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-10">
+    <div className="w-full min-h-screen bg-gray-100 py-3 sm:py-6 px-1 sm:px-6 lg:px-10">
       {/* GRID CONTAINER */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mx-auto max-w-[1400px] items-start">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-8 mx-auto max-w-[1400px] items-start">
+        
         {/* LEFT PANEL */}
-        <div className="col-span-1 bg-white p-6 rounded-2xl shadow-lg border relative">
+        <div className="col-span-1 bg-transparent sm:bg-white sm:p-6 p-2 sm:rounded-2xl sm:shadow-lg sm:border relative">
           <img
             src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png"
             alt="Group Icon"
-            className="absolute opacity-10 right-4 top-4 w-16 sm:w-20"
+            className="absolute opacity-10 right-4 top-4 w-12 sm:w-20 hidden sm:block"
           />
-
+  
           <h2 className="font-bold text-2xl mb-1 text-blue-700">
             {group?.data.group_name || "Unnamed Group"}
           </h2>
           <p className="text-gray-600 text-sm mb-3">
             📍 {group?.data.start_location} → {group?.data.end_location}
           </p>
-
+  
           <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md text-sm text-gray-700 mb-3">
             <span className="font-semibold text-blue-800">🕒 Time Window:</span>{" "}
             {expectedStartTime} – {expectedEndTime}
           </div>
-
+  
           <div className="text-gray-700 text-sm mb-4">
             👥 <span className="font-medium">{liveMemberCount}</span> active member
             {liveMemberCount !== 1 && "s"}
           </div>
-
-          <hr className="my-3 border-gray-300" />
-
+  
+          <hr className="my-3 border-gray-300 hidden sm:block" />
+  
           {/* Members Section */}
           <h3 className="font-semibold text-lg mb-2 text-gray-800">Members</h3>
-          <div className="lg:max-h-30 overflow-y-auto rounded-lg border border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className="overflow-y-auto rounded-lg sm:border sm:border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <ul className="space-y-2 p-1">
               {members.map((m) => (
                 <li
@@ -369,13 +340,13 @@ export default function GroupPage() {
               ))}
             </ul>
           </div>
-
+  
           {/* Leave/Join */}
           <div className="mt-5">
             {isGuest ? (
               <form
                 onSubmit={handleAddMember}
-                className="space-y-3 bg-gray-50 p-3 rounded-xl border"
+                className="space-y-3 bg-gray-50 p-3 rounded-xl sm:border"
               >
                 <input
                   value={guestName}
@@ -406,9 +377,9 @@ export default function GroupPage() {
               </div>
             )}
           </div>
-
+  
           {/* Price Section */}
-          <div className="mt-4 p-4 bg-gray-100 rounded-xl shadow-sm flex items-center justify-between">
+          <div className="mt-4 p-3 sm:p-4 bg-gray-50 sm:bg-gray-100 rounded-xl shadow-sm flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-800">
                 💰 Current Ride Price
@@ -417,12 +388,12 @@ export default function GroupPage() {
                 ₹{price ? price : "Not set yet"}
               </p>
             </div>
-
+  
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePriceUpdate}
                 disabled={updatingPrice}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-3 py-2 sm:px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 {updatingPrice ? "Updating..." : "Set My Price"}
               </button>
@@ -436,14 +407,14 @@ export default function GroupPage() {
               </button>
             </div>
           </div>
-
+  
           <div className="mt-5">
             <CabLauncher />
           </div>
         </div>
-
+  
         {/* RIGHT PANEL */}
-        <div className="col-span-2 lg:min-h-[600px] bg-white p-6 rounded-2xl shadow-lg border flex flex-col">
+        <div className="col-span-2 bg-transparent sm:bg-white p-2 sm:p-6 lg:min-h-[600px] sm:rounded-2xl border-2 rounded-2xl sm:shadow-lg sm:border flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
               💬 Live Chat
@@ -451,12 +422,12 @@ export default function GroupPage() {
             <img
               src="https://cdn-icons-png.flaticon.com/512/1769/1769041.png"
               alt="Chat Icon"
-              className="w-8 h-8"
+              className="w-8 h-8 hidden sm:block"
             />
           </div>
-
+  
           <div
-            className="flex-1 overflow-y-auto p-4 border rounded-xl bg-gray-50 space-y-3 shadow-inner"
+            className="flex-1 overflow-y-auto p-3 sm:p-4 border sm:rounded-xl bg-gray-50 space-y-3 shadow-inner"
             style={{ maxHeight: "500px", minHeight: "320px" }}
           >
             {messages.map((m, idx) =>
@@ -472,7 +443,7 @@ export default function GroupPage() {
                   }`}
                 >
                   <div
-                    className={`max-w-[75%] sm:max-w-xs px-3 py-2 rounded-2xl shadow-sm ${
+                    className={`max-w-[85%] px-3 py-2 rounded-2xl shadow-sm ${
                       m.senderId === user?.id
                         ? "bg-blue-600 text-white rounded-br-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
@@ -491,7 +462,7 @@ export default function GroupPage() {
             )}
             <div ref={messagesEnd} />
           </div>
-
+  
           <form
             onSubmit={sendMessage}
             className="flex flex-col sm:flex-row gap-3 mt-4 items-stretch sm:items-center border-t pt-4"
