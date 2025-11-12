@@ -44,7 +44,7 @@ const CabLauncher = ({ drop }) => {
 
     if (!isMobile) {
       alert("This feature works only on mobile devices.");
-      Navigate(app.fallback_pc);
+      window.open(app.fallback_pc, "_blank");
       return;
     }
 
@@ -84,3 +84,4 @@ const CabLauncher = ({ drop }) => {
 };
 
 export default CabLauncher;
+
