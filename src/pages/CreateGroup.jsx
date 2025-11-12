@@ -18,38 +18,49 @@ export default function CreateGroup() {
   const endBoxRef = useRef(null);
   const startInputRef = useRef(null);
   const endInputRef = useRef(null);
-  const GEOAPIFY_KEY = "110deec76066472b8c8d376e57074323";
+  const MAPPLS_KEY = "vfyhigoxnajenpxcllhnugysndqfictuhhly";
 
   // ---------- AUTOCOMPLETE HANDLER ----------
+
   const handleSearch = async (value, type) => {
     if (!value.trim()) return;
 
     try {
       const res = await fetch(
-        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+        `https://search.mappls.com/search/places/autosuggest/json?query=${encodeURIComponent(
           value
-        )}&limit=5&apiKey=${GEOAPIFY_KEY}`
+        )}&location=28.465828,77.482855&region=IND&zoom=14&hyperLocal&access_token=${MAPPLS_KEY}`
+
       );
+
       const data = await res.json();
 
-      if (type === "start") setStartSuggestions(data.features || []);
-      else setEndSuggestions(data.features || []);
+      const suggestions = (data.suggestedLocations || []).map((item) => ({
+        name: item.placeName,
+        address: item.placeAddress,
+        eLoc: item.eLoc,
+      }));
+
+      if (type === "start") setStartSuggestions(suggestions);
+      else setEndSuggestions(suggestions);
     } catch (err) {
-      console.error("Geoapify fetch error:", err);
+      console.error("Mappls fetch error:", err);
     }
   };
 
-// ---------- SELECT PLACE ----------
+
+  // ---------- SELECT PLACE ----------
   const handleSelect = (place, type) => {
-    const name = place.properties.formatted;
+    const selected = `${place.name}, ${place.address}`;
     if (type === "start") {
-      setStartLoc(name);
+      setStartLoc(selected);
       setStartSuggestions([]);
     } else {
-      setEndLoc(name);
+      setEndLoc(selected);
       setEndSuggestions([]);
     }
   };
+
 
   // ✅ Initialize Google Places Autocomplete
   useEffect(() => {
@@ -165,7 +176,8 @@ export default function CreateGroup() {
                     className="p-2 hover:bg-gray-100 cursor-pointer"
                     onClick={() => handleSelect(s, "start")}
                   >
-                    {s.properties.formatted}
+                    <strong>{s.name}</strong>
+                    <div className="text-sm text-gray-600">{s.address}</div>
                   </li>
                 ))}
               </ul>
@@ -188,12 +200,13 @@ export default function CreateGroup() {
             {endSuggestions.length > 0 && (
               <ul className="absolute z-10 bg-white border rounded-lg mt-1 shadow max-h-48 overflow-y-auto w-full">
                 {endSuggestions.map((s, i) => (
-                  <li
+                   <li
                     key={i}
                     className="p-2 hover:bg-gray-100 cursor-pointer"
                     onClick={() => handleSelect(s, "end")}
                   >
-                    {s.properties.formatted}
+                    <strong>{s.name}</strong>
+                    <div className="text-sm text-gray-600">{s.address}</div>
                   </li>
                 ))}
               </ul>
