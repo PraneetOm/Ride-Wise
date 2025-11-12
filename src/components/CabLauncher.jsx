@@ -51,7 +51,7 @@ const CabLauncher = ({ drop }) => {
       name: "Rapido",
       logo: "/Rapido-logo.png",
       deeplink:
-        "intent://ride?pickup_lat=28.465828&pickup_lng=77.482856#Intent;scheme=rapido;package=com.rapido.passenger;S.browser_fallback_url=https%3A%2F%2Fwww.rapido.bike%2Fdownload;end;",
+        "rapido://app/launch",
     },
   ];
 
@@ -114,6 +114,7 @@ const CabLauncher = ({ drop }) => {
 
 
 export default CabLauncher;
+
 
 
 
