@@ -57,21 +57,21 @@ const CabLauncher = ({ drop }) => {
   ];
 
   const openApp = (app) => {
-    if (!pickup) {
-      alert("Fetching your location...");
-      return;
-    }
+    //if (!pickup) {
+      //alert("Fetching your location...");
+      //return;
+    //}
 
     if (!isMobile) {
       alert("This feature works only on mobile devices.");
       return;
     }
 
-    const deeplink = app.deeplink
-      .replace("{pickup_lat}", pickup.lat)
-      .replace("{pickup_lng}", pickup.lng)
-      .replace("{drop_lat}", drop.lat)
-      .replace("{drop_lng}", drop.lng);
+    //const deeplink = app.deeplink
+      //.replace("{pickup_lat}", pickup.lat)
+      //.replace("{pickup_lng}", pickup.lng)
+      //.replace("{drop_lat}", drop.lat)
+      //.replace("{drop_lng}", drop.lng);
 
     // Try opening the deep link
     window.location.href = deeplink;
@@ -115,3 +115,4 @@ const CabLauncher = ({ drop }) => {
 
 
 export default CabLauncher;
+
