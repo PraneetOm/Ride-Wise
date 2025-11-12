@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 
 const CabLauncher = ({ drop }) => {
-  const [pickup, setPickup] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
   // ✅ Detect if mobile device
@@ -13,32 +12,15 @@ const CabLauncher = ({ drop }) => {
     setIsMobile(checkMobile);
   }, []);
 
-  // ✅ Get current location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setPickup({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          });
-        },
-        (err) => {
-          console.error("Location error:", err);
-          alert("Please allow location access to use ride apps.");
-        }
-      );
-    }
-  }, []);
-
   // 🚖 Cab app configuration
   const cabApps = [
     {
       name: "Uber",
       logo: "/uber.png",
       deeplink:
-        "uber://?action=setPickup&pickup[latitude]={pickup_lat}&pickup[longitude]={pickup_lng}&dropoff[latitude]={drop_lat}&dropoff[longitude]={drop_lng}",
+        "https://m.uber.com/looking",
       fallback: "https://play.google.com/store/apps/details?id=com.ubercab",
+      fallback_pc: "https://m.uber.com/looking",
     },
     {
       name: "Ola",
@@ -46,31 +28,27 @@ const CabLauncher = ({ drop }) => {
       deeplink:
         "olacabs://app/launch?lat={pickup_lat}&lng={pickup_lng}&drop_lat={drop_lat}&drop_lng={drop_lng}",
       fallback: "https://play.google.com/store/apps/details?id=com.olacabs.customer",
+      fallback_pc: "https://book.olacabs.com",
     },
     {
       name: "Rapido",
       logo: "/Rapido-logo.png",
       deeplink:
-        "intent://ride?pickup_lat=28.465828&pickup_lng=77.482856&drop_lat=28.5&drop_lng=77.5#Intent;scheme=rapido;package=com.rapido.passenger;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.rapido.passenger;end",
+        "rapido://ride?pickup_lat={pickup_lat}&pickup_lng={pickup_lng}&drop_lat={drop_lat}&drop_lng={drop_lng}",
+      fallback: "https://play.google.com/store/apps/details?id=com.rapido.passenger",
+      fallback_pc: "https://www.rapido.bike/",
     },
   ];
 
   const openApp = (app) => {
-    //if (!pickup) {
-      //alert("Fetching your location...");
-      //return;
-    //}
 
     if (!isMobile) {
       alert("This feature works only on mobile devices.");
+      Navigate(app.fallback_pc);
       return;
     }
 
     const deeplink = app.deeplink;
-      //.replace("{pickup_lat}", pickup.lat)
-      //.replace("{pickup_lng}", pickup.lng)
-      //.replace("{drop_lat}", drop.lat)
-      //.replace("{drop_lng}", drop.lng);
 
     // Try opening the deep link
     window.location.href = deeplink;
@@ -84,7 +62,7 @@ const CabLauncher = ({ drop }) => {
   return (
     <div className="bg-white p-5 rounded-2xl shadow-md border mt-5">
       <h3 className="font-semibold mb-4 flex items-center gap-2">
-        <MapPin size={20} /> Compare & Book Rides
+        <MapPin size={20} /> Compare Ride Options
       </h3>
 
       <div className="grid grid-cols-3 gap-4">
@@ -98,23 +76,11 @@ const CabLauncher = ({ drop }) => {
           >
             <img src={app.logo} alt={app.name} className="w-12 h-12 mb-2" />
             <p className="text-sm font-medium">{app.name}</p>
-            <p className="text-xs text-gray-400">Open in App</p>
           </motion.div>
         ))}
       </div>
-
-      {!pickup && (
-        <p className="text-xs text-gray-500 mt-3">
-          📍 Fetching your current location...
-        </p>
-      )}
     </div>
   );
 };
 
-
 export default CabLauncher;
-
-
-
-
