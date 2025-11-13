@@ -206,13 +206,13 @@ export default function GroupPage() {
         group_id: id,
         user_id: user.id,
       });
-      navigate("/groups");
 
       // refetch member list from server to keep everything consistent
       const membersRes = await api.get(`/members/group/${id}`);
       setMembers(membersRes.data || []);
 
       // leave room; server will broadcast
+      navigate("/groups");
       socketRef.current?.emit("leave-group", { groupId: id, userName: user.name });
     } catch (err) {
       console.error("Leave error:", err);
