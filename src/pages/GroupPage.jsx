@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../api";
 import { io } from "socket.io-client";
 import CabLauncher from "../components/CabLauncher";
-import axios from "axios";
 import { RefreshCcw } from "lucide-react";
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE?.replace("/api", "") || "https://ride-wise.onrender.com";
@@ -208,8 +207,6 @@ export default function GroupPage() {
         group_id: id,
         user_id: user.id,
       });
-
-      console.log("leave response:", res.data);
 
       // refetch member list from server to keep everything consistent
       const membersRes = await api.get(`/members/group/${id}`);
