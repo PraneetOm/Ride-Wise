@@ -18,7 +18,6 @@ export default function GroupList(){
     async function load(){
       try {
         const res = await api.get("/groups");
-        console.log(res.data);
         setGroups(res.data);
       } catch (err) { console.error(err); }
       setLoading(false);
@@ -77,7 +76,7 @@ export default function GroupList(){
     }
   }
 
-const [expanded, setExpanded] = useState({});
+  const [expanded, setExpanded] = useState({});
 
   const toggleExpand = (id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -85,9 +84,9 @@ const [expanded, setExpanded] = useState({});
 
   return (
     <div
-      className="flex flex-col gap-6 max-h-[90vh] overflow-y-auto pr-2 hide-scrollbar"
+      className="flex flex-col gap-6 max-h-[90vh] overflow-y-auto hide-scrollbar"
     >
-      <div className="w-full max-w-5xl mx-auto px-4 md:px-0">
+      <div className="w-full max-w-5xl mx-auto sm:px-4 md:px-0">
         {/* HEADER */}
         <div className="flex flex-col items-center mb-10 text-center">
           <img
@@ -219,7 +218,7 @@ const [expanded, setExpanded] = useState({});
       </div>
 
       {/* Hide Scrollbar CSS */}
-      <style jsx>{`
+      <style>{`
         .hide-scrollbar {
           scrollbar-width: none; /* Firefox */
         }
