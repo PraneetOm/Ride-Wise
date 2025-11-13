@@ -140,7 +140,7 @@ export default function CreateGroup() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 shadow rounded-xl">
+    <div className="sm:max-w-3xl sm:mx-auto sm:bg-white sm:p-8 sm:shadow sm:rounded-xl">
       <h2 className="text-3xl font-semibold mb-6">Create a new Group</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
