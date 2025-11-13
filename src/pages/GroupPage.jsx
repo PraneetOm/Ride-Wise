@@ -202,11 +202,11 @@ export default function GroupPage() {
       // optimistically remove current user from local members list for immediate UI correctness
       setMembers((prev) => prev.filter((m) => String(m.user_id || m.id) !== String(user.id)));
 
-      navigate("/groups");
       const res = api.post("/members/leave_user", {
         group_id: id,
         user_id: user.id,
       });
+      navigate("/groups");
 
       // refetch member list from server to keep everything consistent
       const membersRes = await api.get(`/members/group/${id}`);
