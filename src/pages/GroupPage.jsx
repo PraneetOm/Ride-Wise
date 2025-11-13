@@ -97,13 +97,13 @@ export default function GroupPage() {
     async function load() {
       try {
         const res = await api.get(`/groups/${id}`);
-        console.log(res);
         setGroup(res);
         setPrice(res.data.total_cost);
         setLiveMemberCount(res.data.number_of_members || 0);
-
+        
         const membersRes = await api.get(`/members/group/${id}`);
         setMembers(membersRes.data || []);
+        console.log("Group Joined Successfully.");
       } catch (err) { console.error(err); }
     }
     load();
@@ -217,8 +217,6 @@ export default function GroupPage() {
 
       // leave room; server will broadcast
       socketRef.current?.emit("leave-group", { groupId: id, userName: user.name });
-
-      alert("Left group");
     } catch (err) {
       console.error("Leave error:", err);
       alert(err.response?.data?.error || err.response?.data?.message || "Could not leave group");
@@ -290,9 +288,9 @@ export default function GroupPage() {
   return (
     <div className="w-full min-h-screen bg-gray-100 py-3 sm:py-6 px-1 sm:px-6 lg:px-10">
       {/* GRID CONTAINER */}
-      <div className="grid lg:grid-cols-3 gap-y-4 sm:gap-8 mx-auto max-w-[1400px] items-start">        
+      <div className="space-y-6 gap-4 sm:gap-8 md:grid lg:grid lg:grid-cols-3 mx-auto max-w-[1400px] items-start">        
         {/* LEFT PANEL */}
-        <div className="col-span-1 sm:p-6 p-2 sm:rounded-2xl bg-transparent sm:bg-white border p-4 rounded-2xl sm:shadow-lg relative">
+        <div className="col-span-1 w-full sm:p-6 p-2 sm:rounded-2xl bg-transparent sm:bg-white border p-4 rounded-2xl sm:shadow-lg relative">
           <img
             src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png"
             alt="Group Icon"
@@ -320,7 +318,7 @@ export default function GroupPage() {
 
           {/* Members Section */}
           <h3 className="font-semibold text-lg mb-2 text-gray-800">Members</h3>
-          <div className="overflow-y-auto rounded-lg sm:border sm:border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className="lg:max-h-30 overflow-y-auto rounded-lg sm:border sm:border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <ul className="space-y-2 p-1">
               {members.map((m) => (
                 <li
