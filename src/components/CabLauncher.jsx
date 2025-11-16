@@ -63,7 +63,7 @@ const CabLauncher = ({ drop }) => {
       if (!hidden) {
         window.location.href = app.fallback;
       }
-    }, 1500);
+    }, 3500);
   };
 
   return (
@@ -91,6 +91,7 @@ const CabLauncher = ({ drop }) => {
 };
 
 export default CabLauncher;
+
 
 
 
